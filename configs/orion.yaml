@@ -1,0 +1,68 @@
+# Orion training config — YOLO11n-pose + RWF-2000 + Supervised Contrastive Loss
+#
+# Three upgrades over Vesper (mil_tier1):
+#   1. yolo11n-pose.pt  -> 34 biomechanical pose features appended to obj_vec (16 -> 50 dim)
+#   2. RWF_2000 dataset -> adds 2,000 real-world fight clips (FIGHT class)
+#   3. w_contrastive    -> cosine margin loss pushing ASSAULT/ABUSE/ARREST apart in latent space
+#
+# Usage:
+#   # Download RWF-2000 first (run once, ~$0.01):
+#   modal run modal/train_modal.py::download_rwf2000
+#
+#   # Full training (~20 min, ~$0.70 on L40S):
+#   modal run modal/train_modal.py::run_training --run-name orion_tier2 --config configs/orion.yaml
+#
+# Classes: NORMAL, FIGHT, ASSAULT, ABUSE, ARREST, BURGLARY  (6 classes, Orion-specific)
+# Vesper checkpoints are NOT compatible with Orion (obj_dim 16 -> 50, class count 5 -> 6).
+runtime: {policy: BALANCED, device: auto, precision: fp16}
+sampling:
+  capture_fps: 30
+  detection_fps: 10
+  temporal_fps: 5
+  clip_length: 16
+  frame_stride: 0
+perception:
+  backend: auto
+  weights: yolo11n-pose.pt        # upgraded from yolo11n.pt; routes to PoseDetector
+  tracker: bytetrack
+laya:
+  enabled: false                  # Orion is 100% native ML — no Laya/Gemini inference
+data:
+  datasets:
+    - name: RWF_2000
+      path: datasets/RWF_2000
+      license: "research use; see RWF-2000 request terms"
+      version: "1"
+      source: "HuggingFace DanJoshua/RWF-2000"
+    - name: UFC_crime
+      path: datasets/UFC_crime
+      license: "research use; see UCF-Crime terms"
+      version: "1"
+      source: "official UCF-Crime release"
+  label_mapping: configs/label_mapping.yaml
+  cache_dir: cache
+  output_dir: outputs
+train:
+  mil: true
+  bag_size: 12
+  mil_k: 3
+  # 8 bags x 12 windows = 96 windows/step  (same compute as Vesper)
+  batch_size: 8
+  epochs: 60
+  patience: 8
+  lr: 0.0003
+  weight_decay: 0.0001
+  grad_clip: 1.0
+  balance: sampler
+  amp: true
+  # Loss term weights
+  w_event: 1.0
+  w_anomaly: 0.3
+  w_confidence: 0.1
+  # Supervised contrastive loss (new in Orion)
+  w_contrastive: 0.5              # cosine margin hinge weight
+  contrastive_margin: 0.4        # min cosine distance required between hard class pairs
+  # Sultani-style temporal regularisers
+  mil_smooth: 0.001              # light smoothness; helps fight-vs-assault temporal jitter
+  mil_sparse: 0.0
+  monitor: video_macro_f1

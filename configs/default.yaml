@@ -1,0 +1,23 @@
+runtime: {policy: BALANCED, device: auto, precision: fp16}
+sampling: {capture_fps: 30, detection_fps: 10, temporal_fps: 5, clip_length: 16, frame_stride: 0}
+perception: {backend: auto, weights: yolo11n.pt, tracker: bytetrack}
+laya: {enabled: true, checkpoint: thaitea/laya-vision, revision: null}
+data:
+  datasets:
+    - {name: RWF_2000, path: datasets/RWF_2000, license: "research use; see RWF-2000 request terms", version: "1", source: "official RWF-2000 release"}
+    - {name: UFC_crime, path: datasets/UFC_crime, license: "research use; see UCF-Crime terms", version: "1", source: "official UCF-Crime release"}
+  label_mapping: configs/label_mapping.yaml
+  cache_dir: cache
+  output_dir: outputs
+train:
+  # MIL over video bags: one training sample = one video carrying `bag_size` windows. Required
+  # because the video-level label is wrong for most windows of a long clip. See
+  # aegis/data/dataset.py:VideoBagDataset and aegis/training/trainer.py:compute_mil_losses.
+  mil: true
+  bag_size: 12
+  mil_k: 3
+  # In MIL mode batch_size counts BAGS (videos), so this is 8*12 = 96 windows per step.
+  batch_size: 8
+  # Features are cached, so an epoch costs seconds; let early stopping pick the epoch count.
+  epochs: 60
+  patience: 8

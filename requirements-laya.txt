@@ -1,0 +1,4 @@
+# Laya VISION is a separate experimental fork. The PyPI package "laya" is the text-only model and has NO load_vlm().
+# Install from the fork (per its model card), then pin a revision in config (laya.revision) once you pick one:
+git+https://github.com/r33drichards/laya-vision
+huggingface_hub

@@ -1,0 +1,35 @@
+# The MIL run: one training sample = one video carrying `bag_size` windows.
+#
+# Pair this with configs/baseline.yaml. The two differ only in the objective and the batch
+# semantics needed to keep windows-per-step equal - so any difference in
+# `val_video_macro_f1` / `val_video_anomaly_roc_auc` is attributable to the objective itself.
+#
+# Usage:
+#   python -m aegis.training.train --config configs/mil.yaml --out runs/mil_tier1
+#
+# Do NOT compare train_loss between this run and the baseline: the objective is a different
+# function, so the number is a different quantity. Compare the video-level metrics.
+runtime: {policy: BALANCED, device: auto, precision: fp16}
+sampling: {capture_fps: 30, detection_fps: 10, temporal_fps: 5, clip_length: 16, frame_stride: 0}
+perception: {backend: auto, weights: yolo11n.pt, tracker: bytetrack}
+laya: {enabled: true, checkpoint: thaitea/laya-vision, revision: null}
+data:
+  datasets:
+    - {name: RWF_2000, path: datasets/RWF_2000, license: "research use; see RWF-2000 request terms", version: "1", source: "official RWF-2000 release"}
+    - {name: UFC_crime, path: datasets/UFC_crime, license: "research use; see UCF-Crime terms", version: "1", source: "official UCF-Crime release"}
+  label_mapping: configs/label_mapping.yaml
+  cache_dir: cache
+  output_dir: outputs
+train:
+  mil: true
+  bag_size: 12        # windows sampled per video per epoch == the per-video cap
+  mil_k: 3            # top-k windows of a positive bag supervised toward its label
+  # batch_size counts BAGS here, not windows: 8 bags x 12 windows = 96 windows per step, matching
+  # baseline.yaml's batch_size: 64 as closely as the bag granularity allows.
+  batch_size: 8
+  epochs: 60
+  patience: 8
+  # Sultani-style regularisers, deliberately off so this is a clean A/B against the baseline.
+  # Turn mil_smooth up (try 1e-3) if the anomaly score is jumpy across adjacent windows.
+  mil_smooth: 0.0
+  mil_sparse: 0.0

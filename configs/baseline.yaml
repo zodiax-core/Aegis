@@ -1,0 +1,34 @@
+# Control run: the OLD objective (window-level labels), with the NEW measurement.
+#
+# Why this file exists
+# --------------------
+# MIL changes what the loss *means*, so a MIL run's `train_loss` is not comparable to anything
+# that came before it. To answer "did MIL help?", you need two runs that differ in exactly one
+# thing: this one (window mode) and `configs/mil.yaml` (bag mode). Both report video-level metrics
+# through the same `trainer.evaluate`, so those numbers ARE comparable.
+#
+# Usage:
+#   python -m aegis.training.train --config configs/baseline.yaml --out runs/baseline_tier0
+#
+# Expected: the "low loss, low macro-F1" symptom made visible for the first time. Watch
+# `val_per_class_f1_*` in runs/baseline_tier0/training_history.json - one or two classes should sit
+# near 0.0 while the total loss falls. That is the mechanism, not a bug in the run.
+runtime: {policy: BALANCED, device: auto, precision: fp16}
+sampling: {capture_fps: 30, detection_fps: 10, temporal_fps: 5, clip_length: 16, frame_stride: 0}
+perception: {backend: auto, weights: yolo11n.pt, tracker: bytetrack}
+laya: {enabled: true, checkpoint: thaitea/laya-vision, revision: null}
+data:
+  datasets:
+    - {name: RWF_2000, path: datasets/RWF_2000, license: "research use; see RWF-2000 request terms", version: "1", source: "official RWF-2000 release"}
+    - {name: UFC_crime, path: datasets/UFC_crime, license: "research use; see UCF-Crime terms", version: "1", source: "official UCF-Crime release"}
+  label_mapping: configs/label_mapping.yaml
+  cache_dir: cache
+  output_dir: outputs
+train:
+  mil: false          # <-- the only difference from configs/mil.yaml, alongside batch_size
+  # Window mode: batch_size counts WINDOWS. Keep this equal to mil.yaml's bags*bag_size (=96) so
+  # both runs see the same number of windows per step and the comparison is about the objective,
+  # not the step size.
+  batch_size: 64
+  epochs: 60
+  patience: 8

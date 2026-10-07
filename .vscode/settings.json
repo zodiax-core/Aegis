@@ -1,0 +1,7 @@
+{
+  "python.defaultInterpreterPath": "C:\\Users\\senio\\AppData\\Local\\Programs\\Python\\Python314\\python.exe",
+  "python.analysis.extraPaths": [
+    "e:\\AEGIS",
+    "C:\\Users\\senio\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\site-packages"
+  ]
+}

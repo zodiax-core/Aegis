@@ -1,0 +1,45 @@
+# EVERY source label -> canonical AEGIS label is explicit here. Nothing is merged implicitly.
+# on_unmapped: error  -> a folder/label that is not listed below stops the build (safe default).
+canonical_labels: [NORMAL, FIGHT, ASSAULT, ABUSE, ARREST, ARSON, BURGLARY, EXPLOSION, ROAD_ACCIDENT,
+                   ROBBERY, SHOOTING, SHOPLIFTING, STEALING, VANDALISM]
+normal_label: NORMAL
+on_unmapped: error
+datasets:
+  RWF_2000:                    # folder name under datasets/ ; keys are folder names (case-insensitive)
+    folder_labels: {Fight: FIGHT, NonFight: NORMAL}
+  UCF_crime:                   # (spelling matches your existing datasets/UFC_crime folder name if you keep it)
+    folder_labels:
+      Abuse: ABUSE
+      Arrest: ARREST
+      Arson: ARSON
+      Assault: ASSAULT
+      Burglary: BURGLARY
+      Explosion: EXPLOSION
+      Fighting: FIGHT          # NOTE: UCF 'Fighting' and RWF 'Fight' are both mapped to FIGHT on purpose
+      RoadAccidents: ROAD_ACCIDENT
+      Robbery: ROBBERY
+      Shooting: SHOOTING
+      Shoplifting: SHOPLIFTING
+      Stealing: STEALING
+      Vandalism: VANDALISM
+      Normal: NORMAL
+      Normal_Videos_for_Event_Recognition: NORMAL
+      NormalVideos: NORMAL
+  UFC_crime:                   # alias for the misspelled folder in the current repo
+    folder_labels:
+      Abuse: ABUSE
+      Arrest: ARREST
+      Arson: ARSON
+      Assault: ASSAULT
+      Burglary: BURGLARY
+      Explosion: EXPLOSION
+      Fighting: FIGHT
+      RoadAccidents: ROAD_ACCIDENT
+      Robbery: ROBBERY
+      Shooting: SHOOTING
+      Shoplifting: SHOPLIFTING
+      Stealing: STEALING
+      Vandalism: VANDALISM
+      Normal: NORMAL
+      Normal_Videos_for_Event_Recognition: NORMAL
+      NormalVideos: NORMAL

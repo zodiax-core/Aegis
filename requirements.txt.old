@@ -1,0 +1,11 @@
+# core (inference + training). Install torch/torchvision with the CUDA build matching your driver:
+#   pip install torch torchvision --index-url https://download.pytorch.org/whl/cu124
+torch>=2.2
+torchvision>=0.17
+numpy
+opencv-python          # use opencv-python-headless on servers
+pyyaml
+psutil
+scikit-learn
+ultralytics            # YOLO11 + BYTETracker (imported lazily; pipeline falls back without it)
+Pillow
